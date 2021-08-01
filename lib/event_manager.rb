@@ -2,26 +2,8 @@
 
 require "csv"
 
-# Create an object for missing zipcodes to prevent nil checks
-class NullZip
-  def length
-    0
-  end
-
-  def rjust(*)
-    "00000"
-  end
-end
-
 def clean_zipcode(zipcode)
-  zipcode = zipcode || NullZip.new
-  if zipcode.length < 5
-    zipcode.rjust(5, "0")
-  elsif zipcode.length > 5
-    zipcode[0..4]
-  else zipcode.length == 5
-    zipcode
-  end
+  zipcode.to_s.rjust(5, "0")[0..4]
 end
 
 puts "Event Manager Initialized!\n\n"
