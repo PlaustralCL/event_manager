@@ -35,6 +35,33 @@ def save_thank_you_letter(id, form_letter)
   end
 end
 
+def remove_bad_characters(phone_number)
+  bad_characters = ["-", ".", "(", ")", " "]
+  bad_characters.each do |char|
+    phone_number = phone_number.tr(char, "")
+  end
+  phone_number
+end
+
+def determine_phone_number_status(phone_number)
+  if phone_number.length == 10
+    "Good"
+  elsif phone_number.length == 11 && phone_number[0] == 1
+    "Good"
+  else
+    red("Bad")
+  end
+end
+
+def red(word)
+  "\e[31m#{word}\e[0m"
+end
+
+def clean_phone_number(phone_number)
+  phone_number = remove_bad_characters(phone_number)
+  phone_number_status = determine_phone_number_status(phone_number)
+  { phone_number: phone_number, phone_number_status: phone_number_status }
+end
 puts "Event Manager Initialized!\n\n"
 
 contents = CSV.open(
@@ -43,18 +70,30 @@ contents = CSV.open(
   header_converters: :symbol
 )
 
-template_letter = File.read("form_letter.erb")
-erb_template = ERB.new template_letter
+# template_letter = File.read("form_letter.erb")
+# erb_template = ERB.new template_letter
+
+# contents.each do |row|
+#   id = row[0]
+#   name = row[:first_name]
+
+#   zipcode = clean_zipcode(row[:zipcode])
+
+#   legislators = legislators_by_zipcode(zipcode)
+
+#   form_letter = erb_template.result(binding)
+
+#   save_thank_you_letter(id, form_letter)
+# end
 
 contents.each do |row|
-  id = row[0]
   name = row[:first_name]
+  phone_number = row[:homephone]
 
-  zipcode = clean_zipcode(row[:zipcode])
+  clean_number = clean_phone_number(phone_number)
+  phone_number = clean_number[:phone_number]
+  phone_number_status = clean_number[:phone_number_status]
 
-  legislators = legislators_by_zipcode(zipcode)
+  puts "#{name} #{phone_number} #{phone_number_status}"
 
-  form_letter = erb_template.result(binding)
-
-  save_thank_you_letter(id, form_letter)
 end
