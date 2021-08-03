@@ -43,24 +43,20 @@ def remove_bad_characters(phone_number)
   phone_number
 end
 
-def determine_phone_number_status(phone_number)
-  if phone_number.length == 10
-    "Good"
-  elsif phone_number.length == 11 && phone_number[0] == 1
-    "Good"
-  else
-    red("Bad")
-  end
-end
-
 def red(word)
   "\e[31m#{word}\e[0m"
 end
 
 def clean_phone_number(phone_number)
   phone_number = remove_bad_characters(phone_number)
-  phone_number_status = determine_phone_number_status(phone_number)
-  { phone_number: phone_number, phone_number_status: phone_number_status }
+  phone_number_length = phone_number.length
+  if phone_number_length == 10
+    phone_number
+  elsif phone_number_length == 11 && phone_number[0] == 1
+    phone_number[1..10]
+  else
+    ""
+  end
 end
 puts "Event Manager Initialized!\n\n"
 
@@ -90,10 +86,8 @@ contents.each do |row|
   name = row[:first_name]
   phone_number = row[:homephone]
 
-  clean_number = clean_phone_number(phone_number)
-  phone_number = clean_number[:phone_number]
-  phone_number_status = clean_number[:phone_number_status]
+  phone_number = clean_phone_number(phone_number)
 
-  puts "#{name} #{phone_number} #{phone_number_status}"
+  puts "#{name}         #{phone_number}"
 
 end
