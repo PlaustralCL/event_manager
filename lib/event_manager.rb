@@ -2,8 +2,8 @@
 
 require "csv"
 require "google-apis-civicinfo_v2"
-require 'erb'
-
+require "erb"
+require "time"
 
 def clean_zipcode(zipcode)
   zipcode.to_s.rjust(5, "0")[0..4]
@@ -58,6 +58,31 @@ def clean_phone_number(phone_number)
     ""
   end
 end
+
+def array_frequency(ary)
+  # Frequency hash from: https://womanonrails.com/each-with-object
+  ary.each_with_object(Hash.new(0)) do |item, hash|
+    hash[item] += 1
+  end
+end
+
+def sort_hash(hash)
+  # sorts in descending order
+  (hash.sort_by { |_key, value| -value }).to_h
+end
+
+def time_targeting(registration_hours)
+  hours_frequency = array_frequency(registration_hours)
+
+  # Hash sorting from:https://medium.com/@florenceliang/some-notes-about-using-hash-sort-by-in-ruby-f4b3a700fc33
+  hours_frequency = sort_hash(hours_frequency)
+
+  puts "Hour => # of registrations"
+  hours_frequency.each_pair do |key, value|
+    puts "#{key} => #{value}"
+  end
+end
+
 puts "Event Manager Initialized!\n\n"
 
 contents = CSV.open(
@@ -82,12 +107,17 @@ contents = CSV.open(
 #   save_thank_you_letter(id, form_letter)
 # end
 
+registration_hours = []
+
 contents.each do |row|
   name = row[:first_name]
   phone_number = row[:homephone]
+  registration_time = Time.strptime(row[:regdate], "%m/%d/%y %k:%M")
+  registration_hours.push(registration_time.hour)
 
-  phone_number = clean_phone_number(phone_number)
+  # phone_number = clean_phone_number(phone_number)
 
-  puts "#{name}         #{phone_number}"
-
+  # puts "#{name} #{registration_time.strftime("%A")}"
 end
+
+time_targeting(registration_hours)
