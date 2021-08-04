@@ -59,7 +59,7 @@ def clean_phone_number(phone_number)
   end
 end
 
-def array_frequency(ary)
+def count_frequency(ary)
   # Frequency hash from: https://womanonrails.com/each-with-object
   ary.each_with_object(Hash.new(0)) do |item, hash|
     hash[item] += 1
@@ -67,21 +67,35 @@ def array_frequency(ary)
 end
 
 def sort_hash(hash)
+  # Hash sorting from:https://medium.com/@florenceliang/some-notes-about-using-hash-sort-by-in-ruby-f4b3a700fc33
   # sorts in descending order
   (hash.sort_by { |_key, value| -value }).to_h
 end
 
-def time_targeting(registration_hours)
-  hours_frequency = array_frequency(registration_hours)
+# Turns an array into a frequency hash, sorted by the most frequently occurring elements
+def analyze_data(ary)
+  frequency = count_frequency(ary)
+  sort_hash(frequency)
+end
 
-  # Hash sorting from:https://medium.com/@florenceliang/some-notes-about-using-hash-sort-by-in-ruby-f4b3a700fc33
-  hours_frequency = sort_hash(hours_frequency)
+def time_targeting(registration_hours)
+  hours_frequency = analyze_data(registration_hours)
 
   puts "Hour => # of registrations"
   hours_frequency.each_pair do |key, value|
     puts "#{key} => #{value}"
   end
 end
+
+def day_targeting(registration_day)
+  day_frequency = analyze_data(registration_day)
+
+  puts "Day  => # of registrations"
+  day_frequency.each_pair do |key, value|
+    puts "#{key} => #{value}"
+  end
+end
+
 
 puts "Event Manager Initialized!\n\n"
 
@@ -90,7 +104,7 @@ contents = CSV.open(
   headers: true,
   header_converters: :symbol
 )
-
+### Form Letter Section ###
 # template_letter = File.read("form_letter.erb")
 # erb_template = ERB.new template_letter
 
@@ -108,16 +122,20 @@ contents = CSV.open(
 # end
 
 registration_hours = []
+registration_day = []
 
 contents.each do |row|
   name = row[:first_name]
   phone_number = row[:homephone]
   registration_time = Time.strptime(row[:regdate], "%m/%d/%y %k:%M")
   registration_hours.push(registration_time.hour)
+  registration_day.push(registration_time.strftime("%A"))
+  phone_number = clean_phone_number(phone_number)
 
-  # phone_number = clean_phone_number(phone_number)
-
-  # puts "#{name} #{registration_time.strftime("%A")}"
+  puts "#{name} #{phone_number}"
 end
 
+puts ""
 time_targeting(registration_hours)
+puts ""
+day_targeting(registration_day)
